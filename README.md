@@ -141,3 +141,27 @@ Produces all 7 tables and 5 figures in an `analysis_outputs/` folder.
 Email: abdullaalnomanco@gmail.com
 MSc HCI | University for the Creative Arts, Farnham
 Final submission: 8 September 2026
+
+---
+
+## Bradley-Terry Model
+
+In addition to ANOVA, a **Bradley-Terry pairwise dominance model** was fitted to validate the condition rankings. The BT model estimates a latent "strength" parameter for each condition based on pairwise comparisons across all participants.
+
+### Aggregate BT Strengths
+
+| Condition | Aggregate BT Strength |
+|-----------|----------------------|
+| A — No Explanation | 0.5631 |
+| B — Surface Explanation | 0.9629 |
+| C — Counterfactual Explanation | **2.0617** |
+
+### Win Probabilities (Condition C)
+
+| Comparison | Win Probability |
+|------------|----------------|
+| P(C beats A) | **0.785** |
+| P(C beats B) | **0.682** |
+| P(B beats A) | 0.631 |
+
+**Conclusion:** Both ANOVA and Bradley-Terry converge on the same ranking — **Counterfactual > Surface > No Explanation** — across all 7 outcome measures. Condition C wins all 7 pairwise dominance comparisons.
