@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClearLend AI — Trust Calibration Interface</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#16233D;
+  --ink-soft:#4A5670;
+  --ink-dim:#8994A6;
+  --paper:#EDEEE8;
+  --card:#FAFAF7;
+  --border:#D8DAD3;
+  --teal:#1C6B5F;
+  --teal-dim:#E3EFED;
+  --teal-mid:#2A8C7D;
+  --positive:#256B46;
+  --positive-bg:#E3F2EA;
+  --negative:#B03325;
+  --negative-bg:#FBEAE7;
+  --amber:#8B5E14;
+  --amber-bg:#F5ECCA;
+  --radius:14px;
+  --shadow:0 1px 3px rgba(22,35,61,0.07),0 6px 20px rgba(22,35,61,0.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:"Inter",sans-serif;color:var(--ink);}
+body{
+  background:#0D1520;
+  background-image:radial-gradient(ellipse at 30% 0%,rgba(28,107,95,0.18) 0%,transparent 55%),
+                   radial-gradient(ellipse at 75% 85%,rgba(22,35,61,0.4) 0%,transparent 60%);
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;padding:32px 16px;
+}
+
+/* ── DEVICE SHELL ─────────────────────────────────────────────────────────── */
+.stage-label{
+  position:fixed;top:18px;left:50%;transform:translateX(-50%);
+  color:rgba(255,255,255,0.38);font-family:"IBM Plex Mono",monospace;
+  font-size:10.5px;letter-spacing:0.09em;text-transform:uppercase;
+}
+.device{
+  width:390px;max-width:100%;
+  height:844px;max-height:92vh;
+  background:var(--paper);
+  border-radius:46px;
+  border:10px solid #080F18;
+  box-shadow:0 0 0 1px rgba(255,255,255,0.06),0 40px 100px rgba(0,0,0,0.65);
+  position:relative;overflow:hidden;
+  display:flex;flex-direction:column;
+}
+.notch{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:126px;height:24px;background:#080F18;
+  border-radius:0 0 18px 18px;z-index:30;
+}
+
+/* ── TOP BAR ─────────────────────────────────────────────────────────────── */
+.topbar{
+  padding:34px 20px 8px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-shrink:0;
+}
+.brand{
+  font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:17px;
+  letter-spacing:-0.025em;display:flex;align-items:center;gap:7px;
+}
+.brand-mark{
+  width:26px;height:26px;border-radius:8px;
+  background:var(--teal);
+  display:flex;align-items:center;justify-content:center;
+}
+.brand-mark svg{display:block;}
+.topbar-actions{display:flex;align-items:center;gap:6px;}
+.icon-btn{
+  width:32px;height:32px;border-radius:50%;border:none;
+  background:rgba(22,35,61,0.06);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.icon-btn:hover{background:rgba(22,35,61,0.1);}
+.backbtn{
+  font-size:13px;font-weight:500;color:var(--teal);
+  background:none;border:none;cursor:pointer;
+  padding:5px 10px;border-radius:20px;
+  visibility:hidden;display:flex;align-items:center;gap:4px;
+}
+.backbtn.show{visibility:visible;}
+.backbtn:hover{background:var(--teal-dim);}
+
+/* ── PROGRESS BREADCRUMB ─────────────────────────────────────────────────── */
+.progress-wrap{padding:4px 20px 0;flex-shrink:0;}
+.progress-track{display:flex;gap:4px;margin-bottom:5px;}
+.progress-seg{
+  flex:1;height:3px;border-radius:3px;background:var(--border);
+  transition:background .3s;
+}
+.progress-seg.done{background:var(--teal);}
+.progress-seg.active{background:var(--ink);}
+.progress-label{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;
+  color:var(--ink-dim);letter-spacing:0.03em;text-transform:uppercase;
+  margin-bottom:8px;
+}
+
+/* ── SCROLL AREA ─────────────────────────────────────────────────────────── */
+.screens{flex:1;overflow-y:auto;padding:6px 20px 88px;}
+.screens::-webkit-scrollbar{width:0;}
+.screen{display:none;animation:fade .22s ease;}
+.screen.active{display:block;}
+@keyframes fade{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── TYPOGRAPHY ──────────────────────────────────────────────────────────── */
+.eyebrow{
+  display:block;
+  font-family:"IBM Plex Mono",monospace;
+  font-size:10.5px;letter-spacing:0.07em;text-transform:uppercase;
+  color:var(--teal);margin-bottom:5px;
+}
+h1.h{
+  font-family:"Space Grotesk",sans-serif;
+  font-size:23px;font-weight:700;letter-spacing:-0.025em;
+  margin:0 0 5px;line-height:1.18;
+}
+.sub{font-size:13.5px;color:var(--ink-soft);line-height:1.55;margin:0 0 16px;}
+.label-xs{font-size:11px;font-weight:600;color:var(--ink-dim);text-transform:uppercase;letter-spacing:0.04em;}
+
+/* ── CARDS ───────────────────────────────────────────────────────────────── */
+.card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;margin-bottom:12px;
+  box-shadow:var(--shadow);
+}
+.card-flat{background:rgba(22,35,61,0.04);border-radius:var(--radius);padding:14px;margin-bottom:10px;}
+
+/* ── DECISION VERDICT ────────────────────────────────────────────────────── */
+.verdict-banner{
+  border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;
+  display:flex;align-items:flex-start;gap:14px;
+}
+.verdict-banner.declined{background:var(--negative-bg);border:1px solid rgba(176,51,37,0.18);}
+.verdict-banner.approved{background:var(--positive-bg);border:1px solid rgba(37,107,70,0.18);}
+.verdict-icon{width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.verdict-icon.declined{background:rgba(176,51,37,0.15);}
+.verdict-icon.approved{background:rgba(37,107,70,0.15);}
+.verdict-title{font-family:"Space Grotesk",sans-serif;font-size:20px;font-weight:700;letter-spacing:-0.02em;margin-bottom:2px;}
+.verdict-title.declined{color:var(--negative);}
+.verdict-title.approved{color:var(--positive);}
+.verdict-sub{font-size:12.5px;color:var(--ink-soft);}
+
+/* ── FACTOR ROWS ─────────────────────────────────────────────────────────── */
+.factor-row{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 0;border-bottom:1px solid var(--border);
+}
+.factor-row:last-child{border-bottom:none;padding-bottom:0;}
+.factor-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.factor-dot.red{background:var(--negative);}
+.factor-dot.amber{background:#D4860F;}
+.factor-dot.green{background:var(--positive);}
+.factor-label{flex:1;font-size:13.5px;font-weight:500;}
+.factor-val{font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:600;}
+.factor-val.red{color:var(--negative);}
+.factor-val.amber{color:var(--amber);}
+.factor-val.green{color:var(--positive);}
+.factor-detail{
+  max-height:0;overflow:hidden;transition:max-height .3s ease;
+  font-size:12.5px;color:var(--ink-soft);line-height:1.55;
+}
+.factor-detail.open{max-height:80px;padding-top:6px;}
+.factor-toggle{cursor:pointer;user-select:none;}
+
+/* ── COUNTERFACTUAL BOX ──────────────────────────────────────────────────── */
+.cf-box{
+  background:linear-gradient(135deg,#E6F0EE 0%,#EDF5F3 100%);
+  border:1px solid rgba(28,107,95,0.22);
+  border-radius:var(--radius);padding:14px 16px;margin-bottom:14px;
+}
+.cf-heading{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;
+  letter-spacing:0.07em;text-transform:uppercase;
+  color:var(--teal);margin-bottom:7px;display:flex;align-items:center;gap:6px;
+}
+.cf-text{font-size:13.5px;color:var(--ink);line-height:1.58;}
+.cf-text strong{color:var(--teal-mid);}
+
+/* ── CONFIDENCE INDICATOR ────────────────────────────────────────────────── */
+.conf-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 10px;border-radius:20px;
+  font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;
+}
+.conf-pill.moderate{background:var(--amber-bg);color:var(--amber);}
+.conf-pill.low{background:var(--negative-bg);color:var(--negative);}
+.conf-pill.high{background:var(--positive-bg);color:var(--positive);}
+
+/* ── UNCERTAINTY BANNER ──────────────────────────────────────────────────── */
+.uncertainty-bar{
+  background:var(--amber-bg);border-bottom:1px solid rgba(139,94,20,0.2);
+  padding:10px 16px;display:flex;align-items:flex-start;gap:10px;
+  flex-shrink:0;
+}
+.uncertainty-icon{
+  width:22px;height:22px;border-radius:50%;
+  background:rgba(139,94,20,0.18);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;margin-top:1px;
+}
+.uncertainty-text .ut-title{font-size:12px;font-weight:600;color:var(--amber);margin-bottom:1px;}
+.uncertainty-text .ut-sub{font-size:11.5px;color:var(--amber);opacity:.85;line-height:1.4;}
+
+/* ── BUTTONS ─────────────────────────────────────────────────────────────── */
+.btn{
+  display:block;width:100%;text-align:center;
+  padding:13px 16px;border-radius:11px;
+  font-family:"Inter",sans-serif;font-weight:600;font-size:14px;
+  border:none;cursor:pointer;transition:all .15s;margin-bottom:9px;
+  letter-spacing:-0.01em;
+}
+.btn-primary{background:var(--ink);color:#fff;}
+.btn-primary:hover{background:#243354;}
+.btn-teal{background:var(--teal);color:#fff;}
+.btn-teal:hover{background:#155749;}
+.btn-secondary{background:var(--card);color:var(--ink);border:1px solid var(--border);}
+.btn-secondary:hover{background:#F0F0EC;}
+.btn-ghost{background:none;color:var(--teal);font-weight:600;padding:8px 0;width:auto;display:inline-block;font-size:13.5px;}
+
+/* ── STATUS PILLS ────────────────────────────────────────────────────────── */
+.pill{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 10px;border-radius:20px;
+  font-size:12px;font-weight:600;
+}
+.pill-negative{background:var(--negative-bg);color:var(--negative);}
+.pill-positive{background:var(--positive-bg);color:var(--positive);}
+.pill-amber{background:var(--amber-bg);color:var(--amber);}
+.pill-neutral{background:rgba(22,35,61,0.07);color:var(--ink-soft);}
+
+/* ── DASHBOARD ───────────────────────────────────────────────────────────── */
+.hero-stats{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;
+}
+.stat-tile{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:14px;box-shadow:var(--shadow);
+}
+.stat-tile .num{
+  font-family:"IBM Plex Mono",monospace;
+  font-size:24px;font-weight:600;color:var(--ink);
+}
+.stat-tile .stat-label{font-size:11.5px;color:var(--ink-dim);margin-top:2px;}
+.stat-tile.highlight{background:var(--teal);border-color:var(--teal);}
+.stat-tile.highlight .num{color:#fff;}
+.stat-tile.highlight .stat-label{color:rgba(255,255,255,0.7);}
+
+/* ── APPLICATION LIST ────────────────────────────────────────────────────── */
+.app-item{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 14px;
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  margin-bottom:9px;cursor:pointer;transition:all .15s;
+  box-shadow:var(--shadow);
+}
+.app-item:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(22,35,61,0.1);}
+.app-avatar{
+  width:40px;height:40px;border-radius:12px;
+  background:var(--teal-dim);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;
+}
+.app-name{font-size:14.5px;font-weight:600;margin-bottom:2px;}
+.app-amount{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-soft);}
+.app-arrow{margin-left:auto;color:var(--ink-dim);font-size:18px;}
+
+/* ── ACTION CARDS ────────────────────────────────────────────────────────── */
+.action-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px;margin-bottom:10px;
+  box-shadow:var(--shadow);
+}
+.action-card-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.action-icon{
+  width:32px;height:32px;border-radius:10px;
+  background:var(--teal-dim);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.action-title{font-size:14.5px;font-weight:600;}
+
+/* ── COUNTERFACTUAL SLIDERS ──────────────────────────────────────────────── */
+.slider-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;margin-bottom:10px;
+  box-shadow:var(--shadow);
+}
+.slider-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.slider-head .label{font-size:14.5px;font-weight:600;}
+.slider-head .amt{font-family:"IBM Plex Mono",monospace;font-size:14px;font-weight:600;color:var(--teal);}
+input[type=range]{
+  width:100%;margin:12px 0 6px;
+  -webkit-appearance:none;appearance:none;height:4px;
+  background:var(--border);border-radius:2px;outline:none;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:18px;height:18px;
+  border-radius:50%;background:var(--teal);cursor:pointer;
+  box-shadow:0 0 0 3px rgba(28,107,95,0.15);
+}
+.slider-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-dim);font-family:"IBM Plex Mono",monospace;}
+.outcome-banner{
+  border-radius:9px;padding:10px 14px;margin-bottom:12px;
+  font-size:13px;font-weight:600;text-align:center;
+  transition:all .3s;
+}
+
+/* ── TOGGLE CARD ─────────────────────────────────────────────────────────── */
+.toggle-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px;margin-bottom:10px;
+  cursor:pointer;box-shadow:var(--shadow);transition:border-color .2s;
+}
+.toggle-card.on{border-color:var(--teal);background:var(--teal-dim);}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.toggle-switch{
+  width:36px;height:22px;border-radius:11px;background:var(--border);
+  flex-shrink:0;position:relative;transition:background .2s;
+}
+.toggle-switch::after{
+  content:"";position:absolute;top:3px;left:3px;
+  width:16px;height:16px;border-radius:50%;
+  background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,0.15);
+}
+.toggle-card.on .toggle-switch{background:var(--teal);}
+.toggle-card.on .toggle-switch::after{transform:translateX(14px);}
+
+/* ── CONFIDENCE DEEP DIVE ────────────────────────────────────────────────── */
+.conf-arc-wrap{text-align:center;padding:12px 0 8px;}
+.conf-arc-wrap .conf-pct{
+  font-family:"IBM Plex Mono",monospace;font-size:36px;font-weight:600;
+  color:var(--amber);display:block;margin-top:-8px;
+}
+.conf-arc-wrap .conf-grade{font-size:13px;color:var(--ink-soft);margin-top:2px;}
+.conf-bar-row{display:flex;gap:6px;margin-bottom:8px;align-items:center;}
+.conf-bar-label{font-size:12px;color:var(--ink-soft);width:90px;flex-shrink:0;}
+.conf-bar-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.conf-bar-fill{height:100%;border-radius:3px;background:var(--teal);transition:width .6s ease;}
+.conf-bar-val{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-dim);width:36px;text-align:right;flex-shrink:0;}
+
+/* ── SUMMARY CHECKLIST ───────────────────────────────────────────────────── */
+.check-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.check-row:last-child{border-bottom:none;}
+.check-tick{width:22px;height:22px;border-radius:50%;background:var(--teal-dim);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.check-text{font-size:13.5px;}
+
+/* ── TESTIMONIALS ────────────────────────────────────────────────────────── */
+.stats-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;margin-bottom:12px;
+  display:flex;gap:16px;box-shadow:var(--shadow);
+}
+.stats-left{text-align:center;flex-shrink:0;}
+.stats-left .avg-num{font-family:"IBM Plex Mono",monospace;font-size:36px;font-weight:600;}
+.stars-row{font-size:16px;color:var(--amber);margin:2px 0;}
+.stats-left .avg-count{font-size:11px;color:var(--ink-dim);}
+.stats-right{flex:1;}
+.hist-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+.hist-row span{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-dim);width:14px;flex-shrink:0;}
+.hist-row span:last-child{width:22px;text-align:right;}
+.hist-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden;}
+.hist-fill{height:100%;border-radius:3px;background:var(--amber);}
+.cond-avg-row{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap;}
+.cond-avg-pill{
+  display:inline-flex;flex-direction:column;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:9px;padding:7px 10px;font-size:11px;flex:1;min-width:80px;
+}
+.cond-avg-pill .pill-cond{color:var(--ink-dim);font-size:10px;font-family:"IBM Plex Mono",monospace;letter-spacing:0.04em;}
+.cond-avg-pill .pill-avg{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:14px;color:var(--teal);margin-top:2px;}
+.search-input{
+  width:100%;padding:10px 14px;border-radius:10px;
+  border:1px solid var(--border);background:var(--card);
+  font-family:"Inter",sans-serif;font-size:13.5px;color:var(--ink);
+  outline:none;margin-bottom:10px;
+}
+.search-input:focus{border-color:var(--teal);}
+.filter-wrap{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.filter-chip{
+  padding:5px 11px;border-radius:20px;border:1px solid var(--border);
+  font-size:12px;font-weight:500;cursor:pointer;
+  background:var(--card);color:var(--ink-soft);transition:all .15s;
+  white-space:nowrap;
+}
+.filter-chip.active{background:var(--ink);color:#fff;border-color:var(--ink);}
+.filter-chip:hover:not(.active){background:var(--teal-dim);border-color:var(--teal);}
+.count-label{font-size:11.5px;color:var(--ink-dim);margin-bottom:8px;}
+.testi-card{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:14px;margin-bottom:9px;
+  box-shadow:var(--shadow);
+}
+.testi-head{display:flex;align-items:center;gap:10px;margin-bottom:9px;}
+.testi-avatar{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:"Space Grotesk",sans-serif;font-size:13px;font-weight:700;color:#fff;
+}
+.testi-name{font-size:13.5px;font-weight:600;}
+.testi-meta{font-size:11px;color:var(--ink-dim);margin-top:1px;}
+.testi-stars{margin-left:auto;font-size:13px;color:var(--amber);flex-shrink:0;}
+.testi-quote{font-size:13px;color:var(--ink-soft);line-height:1.6;font-style:italic;}
+.testi-cond{
+  display:inline-block;margin-top:7px;
+  font-family:"IBM Plex Mono",monospace;font-size:10px;
+  padding:2px 8px;border-radius:4px;
+  background:rgba(22,35,61,0.06);color:var(--ink-dim);
+}
+.testi-fairness{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-dim);margin-top:4px;}
+.no-results{text-align:center;padding:32px 0;color:var(--ink-dim);font-size:13.5px;}
+
+/* ── BOTTOM NAV ──────────────────────────────────────────────────────────── */
+.navbar{
+  position:absolute;bottom:0;left:0;right:0;
+  background:rgba(237,238,232,0.92);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border-top:1px solid var(--border);
+  display:grid;grid-template-columns:repeat(4,1fr);
+  padding:8px 0 16px;
+  z-index:20;
+}
+.nav-item{
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:11px;font-weight:500;color:var(--ink-dim);cursor:pointer;padding:4px 0;
+}
+.nav-item.active{color:var(--teal);}
+.nav-item svg{transition:transform .15s;}
+.nav-item:hover svg{transform:scale(1.1);}
+
+/* ── CONFETTI ────────────────────────────────────────────────────────────── */
+#confettiLayer{position:absolute;inset:0;pointer-events:none;z-index:40;overflow:hidden;}
+.confetti-piece{
+  position:absolute;top:-10px;border-radius:2px;
+  animation:fall linear forwards;
+}
+@keyframes fall{to{transform:translateY(900px) rotate(540deg);opacity:0;}}
+
+/* ── DARK MODE (data-theme=dark) ─────────────────────────────────────────── */
+.device[data-theme=dark]{
+  --paper:#0F1B2C;--card:#172030;--border:#253347;
+  --ink:#E8EDF4;--ink-soft:#8EA1BA;--ink-dim:#4D6278;
+}
+</style>
+</head>
+<body>
+
+<div class="stage-label">ClearLend AI · Trust Calibration Interface · MSc HCI FMP</div>
+
+<div class="device" id="device">
+  <div class="notch"></div>
+  <div id="confettiLayer"></div>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 2L9.5 6H11L8 10.5H6L3 6H4.5L7 2Z" fill="white" fill-opacity="0.9"/>
+        </svg>
+      </div>
+      ClearLend
+    </div>
+    <div class="topbar-actions">
+      <button class="backbtn" id="backBtn" onclick="goBack()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        Back
+      </button>
+      <button class="icon-btn" onclick="toggleTheme()" title="Toggle dark mode">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+          <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="#16233D" stroke-width="1.8" id="themeIcon"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- PROGRESS BAR -->
+  <div class="progress-wrap" id="progressWrap" style="display:none">
+    <div class="progress-track" id="progressTrack"></div>
+    <div class="progress-label" id="progressLabel"></div>
+  </div>
+
+  <!-- SCREENS -->
+  <div class="screens" id="screens">
+
+    <!-- ① DASHBOARD -->
+    <section class="screen active" data-id="dashboard">
+      <span class="eyebrow">Good morning</span>
+      <h1 class="h">Your applications</h1>
+      <p class="sub">AI-reviewed decisions with full explanations.</p>
+
+      <div class="hero-stats">
+        <div class="stat-tile highlight">
+          <div class="num">1</div>
+          <div class="stat-label">Awaiting review</div>
+        </div>
+        <div class="stat-tile">
+          <div class="num">70%</div>
+          <div class="stat-label">AI accuracy rate</div>
+        </div>
+        <div class="stat-tile">
+          <div class="num">£5,000</div>
+          <div class="stat-label">Amount requested</div>
+        </div>
+        <div class="stat-tile">
+          <div class="num">72%</div>
+          <div class="stat-label">AI confidence</div>
+        </div>
+      </div>
+
+      <span class="label-xs" style="display:block;margin-bottom:8px;">Recent applications</span>
+      <div class="app-item" onclick="go('overview')">
+        <div class="app-avatar">💳</div>
+        <div style="flex:1">
+          <div class="app-name">Personal Loan · £5,000</div>
+          <div class="app-amount">Ref LC-2026-4471 · 24 months</div>
+        </div>
+        <span class="pill pill-negative">Declined</span>
+        <span class="app-arrow">›</span>
+      </div>
+
+      <div class="app-item" style="opacity:.5;cursor:default;">
+        <div class="app-avatar">🏠</div>
+        <div style="flex:1">
+          <div class="app-name">Mortgage Pre-approval</div>
+          <div class="app-amount">Coming soon</div>
+        </div>
+        <span class="app-arrow">›</span>
+      </div>
+    </section>
+
+    <!-- ② OVERVIEW -->
+    <section class="screen" data-id="overview">
+      <span class="eyebrow">Application LC-2026-4471</span>
+      <h1 class="h">Decision overview</h1>
+      <p class="sub">See the AI recommendation, its reasoning, and what you can do next.</p>
+
+      <div class="verdict-banner declined">
+        <div class="verdict-icon declined">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M18 6L6 18M6 6L18 18" stroke="#B03325" stroke-width="2.2" stroke-linecap="round"/></svg>
+        </div>
+        <div>
+          <div class="verdict-title declined">Not Approved</div>
+          <div class="verdict-sub">£5,000 personal loan · AI confidence: 72%</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="eyebrow">Top contributing factors</span>
+        <div class="factor-row factor-toggle" onclick="toggleDetail(this)">
+          <span class="factor-dot red"></span>
+          <span class="factor-label">Credit utilisation</span>
+          <span class="factor-val red">38% ↑</span>
+        </div>
+        <div class="factor-detail">High utilisation signals reliance on credit. Threshold: below 25%.</div>
+
+        <div class="factor-row factor-toggle" onclick="toggleDetail(this)">
+          <span class="factor-dot red"></span>
+          <span class="factor-label">Debt-to-income ratio</span>
+          <span class="factor-val red">31% ↑</span>
+        </div>
+        <div class="factor-detail">DTI measures affordability. Threshold: below 28%.</div>
+
+        <div class="factor-row factor-toggle" onclick="toggleDetail(this)">
+          <span class="factor-dot amber"></span>
+          <span class="factor-label">Repayment history</span>
+          <span class="factor-val amber">2 missed</span>
+        </div>
+        <div class="factor-detail">Missed payments in the last 24 months reduce confidence.</div>
+
+        <div class="factor-row factor-toggle" onclick="toggleDetail(this)">
+          <span class="factor-dot green"></span>
+          <span class="factor-label">Annual income</span>
+          <span class="factor-val green">£32,400 ✓</span>
+        </div>
+        <div class="factor-detail">Income level meets the threshold for this loan amount.</div>
+      </div>
+
+      <button class="btn btn-teal" onclick="go('explanation')">See full explanation</button>
+      <button class="btn btn-secondary" onclick="go('whatnow')">What can I do?</button>
+    </section>
+
+    <!-- ③ EXPLANATION -->
+    <section class="screen" data-id="explanation">
+      <span class="eyebrow">Step 1 of 5 · Explanation</span>
+      <h1 class="h">Why was this declined?</h1>
+      <p class="sub">The AI reviewed 10 factors. Here are the ones that determined the outcome.</p>
+
+      <div class="cf-box">
+        <div class="cf-heading">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" stroke="#1C6B5F" stroke-width="2" stroke-linecap="round"/></svg>
+          What would change this decision?
+        </div>
+        <div class="cf-text">
+          This decision would likely change to <strong>Approved</strong> if your credit utilisation dropped below <strong>25%</strong> and your debt-to-income ratio fell below <strong>28%</strong>.
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="eyebrow">Primary factor: credit utilisation</span>
+        <p class="sub" style="margin-bottom:10px;">Your current utilisation (38%) is 13 points above the threshold the AI uses as a key indicator of financial stability.</p>
+        <div class="conf-bar-row">
+          <span class="conf-bar-label">Your level</span>
+          <div class="conf-bar-track"><div class="conf-bar-fill" style="width:76%;background:var(--negative);"></div></div>
+          <span class="conf-bar-val" style="color:var(--negative);">38%</span>
+        </div>
+        <div class="conf-bar-row">
+          <span class="conf-bar-label">Target level</span>
+          <div class="conf-bar-track"><div class="conf-bar-fill" style="width:50%;background:var(--teal);"></div></div>
+          <span class="conf-bar-val" style="color:var(--teal);">&lt;25%</span>
+        </div>
+      </div>
+
+      <button class="btn btn-teal" onclick="go('confidence')">How confident is the AI?</button>
+    </section>
+
+    <!-- ④ CONFIDENCE DEEP-DIVE -->
+    <section class="screen" data-id="confidence">
+      <span class="eyebrow">Step 2 of 5 · Confidence</span>
+      <h1 class="h">AI confidence: 72%</h1>
+      <p class="sub">This means the AI has moderate certainty about this outcome. Scores below 60% trigger a manual review flag.</p>
+
+      <div class="card">
+        <div class="conf-arc-wrap">
+          <svg width="200" height="118" viewBox="0 0 200 118">
+            <path d="M 16 100 A 84 84 0 0 1 184 100" fill="none" stroke="#D8DAD3" stroke-width="10" stroke-linecap="round"/>
+            <path d="M 16 100 A 84 84 0 0 1 145 26" fill="none" stroke="#8B5E14" stroke-width="10" stroke-linecap="round"/>
+            <circle cx="145" cy="26" r="5" fill="#8B5E14"/>
+          </svg>
+          <span class="conf-pct" style="margin-top:-56px;">72%</span>
+          <div class="conf-grade">Moderate confidence</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="eyebrow">What drives the confidence score?</span>
+        <div class="conf-bar-row">
+          <span class="conf-bar-label">Data completeness</span>
+          <div class="conf-bar-track"><div class="conf-bar-fill" style="width:90%;"></div></div>
+          <span class="conf-bar-val">High</span>
+        </div>
+        <div class="conf-bar-row">
+          <span class="conf-bar-label">Profile consistency</span>
+          <div class="conf-bar-track"><div class="conf-bar-fill" style="width:72%;"></div></div>
+          <span class="conf-bar-val">72%</span>
+        </div>
+        <div class="conf-bar-row">
+          <span class="conf-bar-label">Similar cases</span>
+          <div class="conf-bar-track"><div class="conf-bar-fill" style="width:60%;background:var(--amber);"></div></div>
+          <span class="conf-bar-val" style="color:var(--amber);">Mixed</span>
+        </div>
+      </div>
+
+      <div class="card-flat">
+        <span class="label-xs" style="display:block;margin-bottom:5px;">What this means for you</span>
+        <p class="sub" style="margin:0;font-size:12.5px;">At 72%, the AI sees your profile as close to the borderline. Small improvements to the factors above could shift this decision. You may also request a manual review.</p>
+      </div>
+
+      <button class="btn btn-teal" onclick="go('deepdive')">Explore the full factor breakdown</button>
+    </section>
+
+    <!-- ⑤ DEEP DIVE -->
+    <section class="screen" data-id="deepdive">
+      <span class="eyebrow">Step 3 of 5 · Detail</span>
+      <h1 class="h">All 10 factors reviewed</h1>
+      <p class="sub">Tap any factor for more detail. Red factors were the primary reasons for the decision.</p>
+
+      <div class="card">
+        <!-- repeat pattern for all factors -->
+        <div class="factor-row factor-toggle" onclick="toggleDetail(this)"><span class="factor-dot red"></span><span class="factor-label">Credit utilisation</span><span class="factor-val red">38%</span></div>
+        <div class="factor-detail">Threshold: below 25%. Reducing balances by ~£1,800 would bring you under the threshold.</div>
+        <div class="factor-row factor-toggle" onclick="toggleDetail(this)"><span class="factor-dot red"></span><span class="factor-label">Debt-to-income ratio</span><span class="factor-val red">31%</span></div>
+        <div class="factor-detail">Threshold: below 28%. Paying down ~£900 of debt relative to income would clear this.</div>
+        <div class="factor-row factor-toggle" onclick="toggleDetail(this)"><span class="factor-dot amber"></span><span class="factor-label">Repayment history</span><span class="factor-val amber">2 missed</span></div>
+        <div class="factor-detail">Two missed payments in the last 24 months. After 12 months without further misses, this improves automatically.</div>
+        <div class="factor-row factor-toggle" onclick="toggleDetail(this)"><span class="factor-dot amber"></span><span class="factor-label">Account age</span><span class="factor-val amber">2.1 yrs</span></div>
+        <div class="factor-detail">Longer credit history builds trust. This improves naturally over time.</div>
+        <div class="factor-row factor-toggle" onclick="toggleDetail(this)"><span class="factor-dot green"></span><span class="factor-label">Annual income</span><span class="factor-val green">£32,400</span></div>
+        <div class="factor-detail">Meets the income threshold for this loan size. ✓</div>
+        <div class="factor-row factor-toggle" onclick="toggleDetail(this)"><span class="factor-dot green"></span><span class="factor-label">Employment type</span><span class="factor-val green">Full-time</span></div>
+        <div class="factor-detail">Full-time employment provides stable income evidence. ✓</div>
+        <div class="factor-row factor-toggle" onclick="toggleDetail(this)"><span class="factor-dot green"></span><span class="factor-label">Loan-to-income ratio</span><span class="factor-val green">15% ✓</span></div>
+        <div class="factor-detail">The loan amount is reasonable relative to your annual income. ✓</div>
+        <div class="factor-row factor-toggle" onclick="toggleDetail(this)"><span class="factor-dot green"></span><span class="factor-label">Existing credit accounts</span><span class="factor-val green">3 active</span></div>
+        <div class="factor-detail">A manageable number of active accounts. ✓</div>
+        <div class="factor-row factor-toggle" onclick="toggleDetail(this)"><span class="factor-dot green"></span><span class="factor-label">Identity verification</span><span class="factor-val green">Passed ✓</span></div>
+        <div class="factor-detail">Full ID verification completed successfully. ✓</div>
+        <div class="factor-row factor-toggle" onclick="toggleDetail(this)"><span class="factor-dot amber"></span><span class="factor-label">Previous applications</span><span class="factor-val amber">1 recent</span></div>
+        <div class="factor-detail">One application in the last 6 months. Multiple applications can slightly reduce confidence.</div>
+      </div>
+
+      <button class="btn btn-teal" onclick="go('counterfactual')">Try changing the outcome →</button>
+    </section>
+
+    <!-- ⑥ COUNTERFACTUAL -->
+    <section class="screen" data-id="counterfactual">
+      <span class="eyebrow">Step 4 of 5 · Counterfactual</span>
+      <h1 class="h">What could change this?</h1>
+      <p class="sub">Preview how changes might affect the recommendation. Nothing here is submitted.</p>
+
+      <div class="outcome-banner pill-negative" id="outcomeBanner">Current outcome: not approved</div>
+
+      <div class="card" style="text-align:center;margin-bottom:12px;">
+        <div class="sub" style="margin:0 0 2px;">Projected AI confidence</div>
+        <div id="projConf" style="font-family:'IBM Plex Mono',monospace;font-size:26px;font-weight:600;color:var(--amber);">72%</div>
+      </div>
+
+      <div class="slider-card">
+        <div class="slider-head">
+          <span class="label">Pay down existing debt</span>
+          <span class="amt" id="debtAmtLabel">£0</span>
+        </div>
+        <p class="sub" style="margin:0 0 4px;font-size:12.5px;">Reduces your debt-to-income ratio and credit utilisation.</p>
+        <input type="range" id="debtSlider" min="0" max="3000" step="100" value="0" oninput="onDebtSlide(this.value)">
+        <div class="slider-labels"><span>£0</span><span>£1,500</span><span>£3,000</span></div>
+      </div>
+
+      <div class="toggle-card" id="tgDeposit" onclick="toggleCF(this,'deposit')">
+        <div class="toggle-row">
+          <div>
+            <div style="font-weight:600;font-size:14px;margin-bottom:3px;">Add £500 to deposit</div>
+            <div class="sub" style="margin:0;font-size:12.5px;">Reduces the amount borrowed relative to your income.</div>
+          </div>
+          <div class="toggle-switch"></div>
+        </div>
+      </div>
+
+      <div class="toggle-card" style="opacity:.5;cursor:default;">
+        <div class="toggle-row">
+          <div>
+            <div style="font-weight:600;font-size:14px;margin-bottom:3px;">Wait for missed payment to age off</div>
+            <div class="sub" style="margin:0;font-size:12.5px;">Available from March 2027 — not something you can change today.</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-teal" onclick="go('whatnow')">What can I do now? →</button>
+    </section>
+
+    <!-- ⑦ WHAT CAN I DO -->
+    <section class="screen" data-id="whatnow">
+      <span class="eyebrow">Step 5 of 5 · Your options</span>
+      <h1 class="h">What can I do now?</h1>
+      <p class="sub">You have three paths forward. None of them close the door permanently.</p>
+
+      <div class="action-card">
+        <div class="action-card-head">
+          <div class="action-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 3H5L5.4 5M7 13H17L21 5H5.4M7 13L5.4 5M7 13L4.7 15.3C4.3 15.7 4.6 16.5 5.1 16.5H17M17 16.5A1.5 1.5 0 1 0 17 19.5A1.5 1.5 0 0 0 17 16.5ZM9 19.5A1.5 1.5 0 1 1 6 19.5A1.5 1.5 0 0 1 9 19.5Z" stroke="#1C6B5F" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+          <span class="action-title">Improve and re-apply</span>
+        </div>
+        <p class="sub" style="font-size:12.5px;margin-bottom:10px;">Reduce your credit utilisation to below 25% and your DTI to below 28%. Based on your profile, re-applying in 6–9 months gives you the best chance.</p>
+        <button class="btn btn-secondary" style="margin:0;" onclick="go('counterfactual')">Model the changes</button>
+      </div>
+
+      <div class="action-card">
+        <div class="action-card-head">
+          <div class="action-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M17 21V19C17 17 15 15 13 15H5C3 15 1 17 1 19V21M23 21V19C23 17 21 15 20 15M16 3C18 3.8 19 5.8 19 8C19 10.2 18 12.2 16 13M13 7C13 9.2 11.2 11 9 11C6.8 11 5 9.2 5 7C5 4.8 6.8 3 9 3C11.2 3 13 4.8 13 7Z" stroke="#1C6B5F" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+          <span class="action-title">Request human review</span>
+        </div>
+        <p class="sub" style="font-size:12.5px;margin-bottom:10px;">A person will review your full application, including context the AI may not have weighed correctly. Typically resolved in 3–5 working days.</p>
+        <button class="btn btn-secondary" style="margin:0;" onclick="go('summary')">Request review</button>
+      </div>
+
+      <div class="action-card">
+        <div class="action-card-head">
+          <div class="action-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 20H21M3 20H6.5L17.5 9C18.3 8.2 18.3 6.8 17.5 6C16.7 5.2 15.3 5.2 14.5 6L3.5 17V20" stroke="#1C6B5F" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+          <span class="action-title">Submit a formal appeal</span>
+        </div>
+        <p class="sub" style="font-size:12.5px;margin-bottom:10px;">If information in your application was incorrect or missing, we'll look again. Your appeal rights are protected under the FCA Consumer Duty.</p>
+        <button class="btn btn-secondary" style="margin:0;" onclick="go('summary')">Start appeal</button>
+      </div>
+
+      <button class="btn btn-ghost" onclick="go('summary')">Skip to summary →</button>
+    </section>
+
+    <!-- ⑧ UNCERTAINTY STATE (low confidence variant) -->
+    <section class="screen" data-id="uncertainty">
+      <div class="uncertainty-bar">
+        <div class="uncertainty-icon">!</div>
+        <div class="uncertainty-text">
+          <div class="ut-title">Lower than usual AI confidence (48%)</div>
+          <div class="ut-sub">Review the factors carefully. You may wish to request a manual review before accepting this outcome.</div>
+        </div>
+      </div>
+      <div style="padding:16px 20px 0;">
+        <span class="eyebrow">Application LC-2026-5512</span>
+        <h1 class="h">Not Approved</h1>
+        <p class="sub">AI confidence is low on this decision. This may reflect an edge case in your profile.</p>
+
+        <div class="card">
+          <div class="factor-row"><span class="factor-dot green"></span><span class="factor-label">Income</span><span class="factor-val green">£41,200 ✓</span></div>
+          <div class="factor-row"><span class="factor-dot green"></span><span class="factor-label">Credit utilisation</span><span class="factor-val green">29% ✓</span></div>
+          <div class="factor-row"><span class="factor-dot amber"></span><span class="factor-label">Employment type</span><span class="factor-val amber">Contract</span></div>
+          <div class="factor-row" style="border:none;"><span class="factor-dot amber"></span><span class="factor-label">Account age</span><span class="factor-val amber">1.8 yrs</span></div>
+        </div>
+
+        <div class="cf-box">
+          <div class="cf-heading">Why is confidence low?</div>
+          <div class="cf-text">Contract employment introduced uncertainty the AI could not fully resolve. If your contract is longer than <strong>12 months</strong>, a manual review may reach a different conclusion.</div>
+        </div>
+
+        <button class="btn" style="background:var(--amber);color:#fff;" onclick="go('summary')">Request manual review</button>
+        <button class="btn btn-secondary" onclick="go('dashboard')">Back to applications</button>
+      </div>
+    </section>
+
+    <!-- ⑨ SUMMARY -->
+    <section class="screen" data-id="summary">
+      <span class="eyebrow">Decision summary</span>
+      <h1 class="h">Your review is complete</h1>
+      <p class="sub">Everything from this session, in one place.</p>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span style="font-weight:600;">Recommendation</span>
+          <span class="pill pill-negative">Not approved</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <span style="font-weight:600;">AI confidence</span>
+          <span class="conf-pill moderate">72% · Moderate</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-weight:600;">Top factor</span>
+          <span style="font-size:13px;color:var(--ink-soft);">Credit utilisation (38%)</span>
+        </div>
+      </div>
+
+      <span class="label-xs" style="display:block;margin-bottom:8px;">What you reviewed</span>
+      <div class="card">
+        <div class="check-row"><div class="check-tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17L4 12" stroke="#1C6B5F" stroke-width="2.5" stroke-linecap="round"/></svg></div><span class="check-text">AI recommendation and key factors</span></div>
+        <div class="check-row"><div class="check-tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17L4 12" stroke="#1C6B5F" stroke-width="2.5" stroke-linecap="round"/></svg></div><span class="check-text">Counterfactual explanation — what would change the outcome</span></div>
+        <div class="check-row"><div class="check-tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17L4 12" stroke="#1C6B5F" stroke-width="2.5" stroke-linecap="round"/></svg></div><span class="check-text">AI confidence level and what drives it</span></div>
+        <div class="check-row"><div class="check-tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17L4 12" stroke="#1C6B5F" stroke-width="2.5" stroke-linecap="round"/></svg></div><span class="check-text">All 10 factors reviewed in detail</span></div>
+        <div class="check-row"><div class="check-tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17L4 12" stroke="#1C6B5F" stroke-width="2.5" stroke-linecap="round"/></svg></div><span class="check-text">Three next-step options explored</span></div>
+      </div>
+
+      <button class="btn btn-primary" onclick="go('dashboard')">Back to applications</button>
+      <button class="btn btn-secondary" onclick="go('testimonials')">See what others said</button>
+    </section>
+
+    <!-- ⑩ TESTIMONIALS -->
+    <section class="screen" data-id="testimonials">
+      <span class="eyebrow">Participant reviews · n=120</span>
+      <h1 class="h">What the study found</h1>
+      <p class="sub">120 participants from the trust-calibration study (N=678), sampled proportionally across the three explanation conditions. Names shown as first name + last initial.</p>
+
+      <div class="stats-card">
+        <div class="stats-left">
+          <div class="avg-num" id="avgNum">3.3</div>
+          <div class="stars-row" id="avgStars">★★★☆☆</div>
+          <div class="avg-count">120 reviews</div>
+        </div>
+        <div class="stats-right" id="histWrap"></div>
+      </div>
+
+      <span class="label-xs" style="display:block;margin-bottom:8px;">Average by condition</span>
+      <div class="cond-avg-row">
+        <div class="cond-avg-pill"><span class="pill-cond">A · No explanation</span><span class="pill-avg" id="avgA">—</span></div>
+        <div class="cond-avg-pill"><span class="pill-cond">B · Surface</span><span class="pill-avg" id="avgB">—</span></div>
+        <div class="cond-avg-pill"><span class="pill-cond">C · Counterfactual</span><span class="pill-avg" id="avgC">—</span></div>
+      </div>
+
+      <input class="search-input" id="testiSearch" type="text" placeholder="Search by name, university or keyword…" oninput="renderTestimonials(true)">
+
+      <div class="filter-wrap" id="ratingFilters">
+        <div class="filter-chip active" data-filter="all" onclick="setFilter('all')">All</div>
+        <div class="filter-chip" data-filter="4" onclick="setFilter('4')">★ 4</div>
+        <div class="filter-chip" data-filter="3" onclick="setFilter('3')">★ 3</div>
+        <div class="filter-chip" data-filter="2" onclick="setFilter('2')">★ 2</div>
+      </div>
+      <div class="filter-wrap" id="condFilters">
+        <div class="filter-chip active" data-cond="all" onclick="setCondFilter('all')">All conditions</div>
+        <div class="filter-chip" data-cond="A_no_explanation" onclick="setCondFilter('A_no_explanation')">A · No expl.</div>
+        <div class="filter-chip" data-cond="B_surface" onclick="setCondFilter('B_surface')">B · Surface</div>
+        <div class="filter-chip" data-cond="C_counterfactual" onclick="setCondFilter('C_counterfactual')">C · Counterfactual</div>
+      </div>
+
+      <div class="count-label" id="countLabel"></div>
+      <div id="testiList"></div>
+      <button class="btn btn-secondary" id="loadMoreBtn" onclick="loadMore()" style="margin-top:4px;">Show more</button>
+    </section>
+
+  </div><!-- /screens -->
+
+  <!-- BOTTOM NAV -->
+  <nav class="navbar">
+    <div class="nav-item active" id="nav-home" onclick="navTo('dashboard')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 9L12 2L21 9V20A1 1 0 0 1 20 21H15V16H9V21H4A1 1 0 0 1 3 20V9Z" stroke="currentColor" stroke-width="1.7" fill="none"/></svg>
+      Home
+    </div>
+    <div class="nav-item" id="nav-apps" onclick="navTo('overview')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.7"/></svg>
+      Decision
+    </div>
+    <div class="nav-item" id="nav-reviews" onclick="navTo('testimonials')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="1.7"/></svg>
+      Reviews
+    </div>
+    <div class="nav-item" id="nav-summary" onclick="navTo('summary')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.7"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+      Profile
+    </div>
+  </nav>
+</div><!-- /device -->
+
+<script>
+const ALL_TESTIMONIALS = [{"id": 1, "display_name": "Rekha B.", "university": "BRAC University", "nationality": "Indian", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 3.54, "trust_automation": 4.02, "review_date": "2026-07-15", "quote": "Fine for a fast check, but I was left guessing why I got that outcome."}, {"id": 2, "display_name": "Emma C.", "university": "Daffodil International University", "nationality": "British", "condition": "C_counterfactual", "rating": 4, "perceived_fairness": 5.5, "trust_automation": 4.53, "review_date": "2026-07-24", "quote": "Really liked exploring the scenarios, though I wanted to try a few more combinations."}, {"id": 3, "display_name": "Rafat H.", "university": "University of East London", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 4.16, "trust_automation": 4.83, "review_date": "2026-07-31", "quote": "The scenario explorer was interesting, but I wasn't sure how reliable the predictions were."}, {"id": 4, "display_name": "Victoria L.", "university": "University of Bedfordshire", "nationality": "British", "condition": "A_no_explanation", "rating": 4, "perceived_fairness": 5.16, "trust_automation": 5.17, "review_date": "2026-07-03", "quote": "Did what it needed to do. A short reason alongside the decision would have been nice."}, {"id": 5, "display_name": "Meera V.", "university": "BRAC University", "nationality": "Indian", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 4.27, "trust_automation": 3.53, "review_date": "2026-08-15", "quote": "Fine for a fast check, but I was left guessing why I got that outcome."}, {"id": 6, "display_name": "Mamunur R.", "university": "BUET", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 3, "perceived_fairness": 4.85, "trust_automation": 4.19, "review_date": "2026-07-28", "quote": "The factors were listed, but I still wasn't sure how they were weighed together."}, {"id": 7, "display_name": "Shahnaz P.", "university": "Kingston University London", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 2.93, "trust_automation": 4.85, "review_date": "2026-07-10", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 8, "display_name": "Eduardo F.", "university": "Daffodil International University", "nationality": "Other", "condition": "B_surface", "rating": 3, "perceived_fairness": 4.11, "trust_automation": 4.37, "review_date": "2026-08-05", "quote": "The factors were listed, but I still wasn't sure how they were weighed together."}, {"id": 9, "display_name": "Elena P.", "university": "North South University", "nationality": "Other", "condition": "A_no_explanation", "rating": 4, "perceived_fairness": 5.94, "trust_automation": 5.06, "review_date": "2026-07-25", "quote": "Did what it needed to do. A short reason alongside the decision would have been nice."}, {"id": 10, "display_name": "Logan G.", "university": "Oxford Brookes University", "nationality": "British", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 5.0, "trust_automation": 4.46, "review_date": "2026-07-11", "quote": "Useful to see what might change things, though it felt a bit abstract."}, {"id": 11, "display_name": "Amirah H.", "university": "Goldsmiths University of London", "nationality": "Malaysian", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 4.23, "trust_automation": 4.91, "review_date": "2026-07-24", "quote": "Fine for a fast check, but I was left guessing why I got that outcome."}, {"id": 12, "display_name": "Rony H.", "university": "University of Surrey", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 4, "perceived_fairness": 5.57, "trust_automation": 5.01, "review_date": "2026-07-29", "quote": "Really liked exploring the scenarios, though I wanted to try a few more combinations."}, {"id": 13, "display_name": "Jahanara B.", "university": "University of Bedfordshire", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 4, "perceived_fairness": 5.26, "trust_automation": 4.51, "review_date": "2026-07-08", "quote": "Clear breakdown overall — helped me understand where I stood."}, {"id": 14, "display_name": "Suresh Y.", "university": "Leeds Beckett University", "nationality": "Indian", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 4.75, "trust_automation": 4.23, "review_date": "2026-07-16", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 15, "display_name": "Pooja Y.", "university": "University of Chichester", "nationality": "Indian", "condition": "B_surface", "rating": 3, "perceived_fairness": 5.3, "trust_automation": 2.2, "review_date": "2026-07-18", "quote": "The factors were listed, but I still wasn't sure how they were weighed together."}, {"id": 16, "display_name": "Rezaul K.", "university": "University of Surrey", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 5.57, "trust_automation": 3.1, "review_date": "2026-07-04", "quote": "The scenario explorer was interesting, but I wasn't sure how reliable the predictions were."}, {"id": 17, "display_name": "Minhajul A.", "university": "Kingston University London", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 3.01, "trust_automation": 5.17, "review_date": "2026-07-07", "quote": "Fine for a fast check, but I was left guessing why I got that outcome."}, {"id": 18, "display_name": "Siamul I.", "university": "University of South Wales", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 5.63, "trust_automation": 3.8, "review_date": "2026-08-17", "quote": "Useful to see what might change things, though it felt a bit abstract."}, {"id": 19, "display_name": "Toufiqul I.", "university": "London Metropolitan University", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 4.27, "trust_automation": 2.8, "review_date": "2026-07-24", "quote": "The scenario explorer was interesting, but I wasn't sure how reliable the predictions were."}, {"id": 20, "display_name": "Poly A.", "university": "London Metropolitan University", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 4.56, "trust_automation": 2.93, "review_date": "2026-08-17", "quote": "Useful to see what might change things, though it felt a bit abstract."}, {"id": 21, "display_name": "Nadia I.", "university": "University for the Creative Arts, Farnham", "nationality": "Pakistani", "condition": "B_surface", "rating": 3, "perceived_fairness": 4.42, "trust_automation": 4.93, "review_date": "2026-07-05", "quote": "Useful information, though it took me a moment to make sense of it all."}, {"id": 22, "display_name": "Vinod P.", "university": "University of Bedfordshire", "nationality": "Indian", "condition": "B_surface", "rating": 3, "perceived_fairness": 4.15, "trust_automation": 4.14, "review_date": "2026-08-07", "quote": "Useful information, though it took me a moment to make sense of it all."}, {"id": 23, "display_name": "Noor M.", "university": "University of Surrey", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 5.94, "trust_automation": 2.88, "review_date": "2026-07-25", "quote": "Useful to see what might change things, though it felt a bit abstract."}, {"id": 24, "display_name": "Charlotte C.", "university": "North South University", "nationality": "British", "condition": "B_surface", "rating": 2, "perceived_fairness": 3.12, "trust_automation": 2.79, "review_date": "2026-08-08", "quote": "I saw the factors but still didn't fully understand the reasoning behind the outcome."}, {"id": 25, "display_name": "Nasima B.", "university": "Brunel University London", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 3.05, "trust_automation": 4.76, "review_date": "2026-08-06", "quote": "Fine for a fast check, but I was left guessing why I got that outcome."}, {"id": 26, "display_name": "Lima A.", "university": "University of Dhaka", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 2.95, "trust_automation": 4.56, "review_date": "2026-07-24", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 27, "display_name": "Arafat H.", "university": "University of South Wales", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 4.88, "trust_automation": 4.33, "review_date": "2026-07-17", "quote": "Useful to see what might change things, though it felt a bit abstract."}, {"id": 28, "display_name": "Iqbal N.", "university": "Brunel University London", "nationality": "Malaysian", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 5.4, "trust_automation": 2.94, "review_date": "2026-07-21", "quote": "Useful to see what might change things, though it felt a bit abstract."}, {"id": 29, "display_name": "Tahmina A.", "university": "University of Chichester", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 4, "perceived_fairness": 4.67, "trust_automation": 5.5, "review_date": "2026-08-10", "quote": "Clear breakdown overall — helped me understand where I stood."}, {"id": 30, "display_name": "Rubayat A.", "university": "University of Hertfordshire", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 4.32, "trust_automation": 4.2, "review_date": "2026-08-08", "quote": "Useful to see what might change things, though it felt a bit abstract."}, {"id": 31, "display_name": "Tawsif A.", "university": "Middlesex University", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 3.16, "trust_automation": 5.35, "review_date": "2026-07-14", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 32, "display_name": "Shohel R.", "university": "Kingston University London", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 3.9, "trust_automation": 5.16, "review_date": "2026-08-18", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 33, "display_name": "Zoe T.", "university": "University for the Creative Arts, Farnham", "nationality": "British", "condition": "B_surface", "rating": 3, "perceived_fairness": 3.76, "trust_automation": 3.96, "review_date": "2026-07-10", "quote": "The factors were listed, but I still wasn't sure how they were weighed together."}, {"id": 34, "display_name": "Ahmad R.", "university": "Brunel University London", "nationality": "Malaysian", "condition": "C_counterfactual", "rating": 4, "perceived_fairness": 6.71, "trust_automation": 3.18, "review_date": "2026-07-03", "quote": "The counterfactual view was a great touch — helped me understand what to do next."}, {"id": 35, "display_name": "Natalia P.", "university": "Leeds Beckett University", "nationality": "Other", "condition": "B_surface", "rating": 3, "perceived_fairness": 4.12, "trust_automation": 4.65, "review_date": "2026-07-19", "quote": "The factors were listed, but I still wasn't sure how they were weighed together."}, {"id": 36, "display_name": "Sadia I.", "university": "University for the Creative Arts, Farnham", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 3.65, "trust_automation": 3.68, "review_date": "2026-08-17", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 37, "display_name": "Patrick N.", "university": "University of Surrey", "nationality": "Other", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 3.99, "trust_automation": 3.22, "review_date": "2026-08-08", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 38, "display_name": "Raj G.", "university": "Brunel University London", "nationality": "Indian", "condition": "B_surface", "rating": 3, "perceived_fairness": 4.03, "trust_automation": 4.8, "review_date": "2026-08-01", "quote": "The factors were listed, but I still wasn't sure how they were weighed together."}, {"id": 39, "display_name": "Moni A.", "university": "University of Surrey", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 4, "perceived_fairness": 5.65, "trust_automation": 4.9, "review_date": "2026-07-14", "quote": "Did what it needed to do. A short reason alongside the decision would have been nice."}, {"id": 40, "display_name": "Sana M.", "university": "BUET", "nationality": "Pakistani", "condition": "B_surface", "rating": 3, "perceived_fairness": 3.36, "trust_automation": 4.34, "review_date": "2026-07-16", "quote": "Useful information, though it took me a moment to make sense of it all."}, {"id": 41, "display_name": "Suchona A.", "university": "University of Dhaka", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 3.16, "trust_automation": 5.31, "review_date": "2026-08-08", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 42, "display_name": "Ayasha S.", "university": "University of East London", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 3, "perceived_fairness": 5.08, "trust_automation": 3.08, "review_date": "2026-08-10", "quote": "The factors were listed, but I still wasn't sure how they were weighed together."}, {"id": 43, "display_name": "Sunita M.", "university": "University for the Creative Arts, Farnham", "nationality": "Indian", "condition": "B_surface", "rating": 4, "perceived_fairness": 5.69, "trust_automation": 3.93, "review_date": "2026-07-10", "quote": "Clear breakdown overall — helped me understand where I stood."}, {"id": 44, "display_name": "Siti H.", "university": "University of Dhaka", "nationality": "Malaysian", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 5.55, "trust_automation": 3.4, "review_date": "2026-08-10", "quote": "Useful to see what might change things, though it felt a bit abstract."}, {"id": 45, "display_name": "Sohel R.", "university": "Brunel University London", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 4, "perceived_fairness": 6.38, "trust_automation": 4.04, "review_date": "2026-08-16", "quote": "Clear breakdown overall — helped me understand where I stood."}, {"id": 46, "display_name": "Chloe M.", "university": "University of Chichester", "nationality": "British", "condition": "B_surface", "rating": 3, "perceived_fairness": 3.61, "trust_automation": 4.54, "review_date": "2026-07-16", "quote": "Useful information, though it took me a moment to make sense of it all."}, {"id": 47, "display_name": "Zain M.", "university": "University of Westminster", "nationality": "Pakistani", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 4.74, "trust_automation": 4.64, "review_date": "2026-07-10", "quote": "The scenario explorer was interesting, but I wasn't sure how reliable the predictions were."}, {"id": 48, "display_name": "Fatima M.", "university": "Anglia Ruskin University", "nationality": "Pakistani", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 5.34, "trust_automation": 3.18, "review_date": "2026-08-01", "quote": "The scenario explorer was interesting, but I wasn't sure how reliable the predictions were."}, {"id": 49, "display_name": "Shafiqur R.", "university": "University of South Wales", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 4.89, "trust_automation": 4.18, "review_date": "2026-08-07", "quote": "Useful to see what might change things, though it felt a bit abstract."}, {"id": 50, "display_name": "Abul H.", "university": "University of Dhaka", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 5.77, "trust_automation": 3.28, "review_date": "2026-08-12", "quote": "The scenario explorer was interesting, but I wasn't sure how reliable the predictions were."}, {"id": 51, "display_name": "Divya P.", "university": "Oxford Brookes University", "nationality": "Indian", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 3.86, "trust_automation": 5.24, "review_date": "2026-07-11", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 52, "display_name": "Delwar H.", "university": "Manchester Metropolitan University", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 3.94, "trust_automation": 2.94, "review_date": "2026-07-16", "quote": "The scenario explorer was interesting, but I wasn't sure how reliable the predictions were."}, {"id": 53, "display_name": "Seema T.", "university": "North South University", "nationality": "Indian", "condition": "B_surface", "rating": 4, "perceived_fairness": 4.26, "trust_automation": 5.77, "review_date": "2026-07-20", "quote": "Good explanation of the main factors, though I wanted a bit more detail on one of them."}, {"id": 54, "display_name": "Hossain A.", "university": "Kingston University London", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 3, "perceived_fairness": 3.01, "trust_automation": 4.35, "review_date": "2026-07-19", "quote": "Useful information, though it took me a moment to make sense of it all."}, {"id": 55, "display_name": "Nargis A.", "university": "Daffodil International University", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 3, "perceived_fairness": 3.34, "trust_automation": 4.42, "review_date": "2026-08-11", "quote": "Useful information, though it took me a moment to make sense of it all."}, {"id": 56, "display_name": "Chioma N.", "university": "Middlesex University", "nationality": "Nigerian", "condition": "C_counterfactual", "rating": 4, "perceived_fairness": 5.6, "trust_automation": 4.04, "review_date": "2026-08-14", "quote": "The counterfactual view was a great touch — helped me understand what to do next."}, {"id": 57, "display_name": "George B.", "university": "University of Westminster", "nationality": "British", "condition": "B_surface", "rating": 4, "perceived_fairness": 4.93, "trust_automation": 5.58, "review_date": "2026-08-14", "quote": "Good explanation of the main factors, though I wanted a bit more detail on one of them."}, {"id": 58, "display_name": "Jeba A.", "university": "London Metropolitan University", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 3, "perceived_fairness": 4.44, "trust_automation": 4.37, "review_date": "2026-07-11", "quote": "The factors were listed, but I still wasn't sure how they were weighed together."}, {"id": 59, "display_name": "Shahriar K.", "university": "University of Westminster", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 3, "perceived_fairness": 4.37, "trust_automation": 4.12, "review_date": "2026-07-26", "quote": "The factors were listed, but I still wasn't sure how they were weighed together."}, {"id": 60, "display_name": "Monirul I.", "university": "Anglia Ruskin University", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 4, "perceived_fairness": 4.12, "trust_automation": 6.17, "review_date": "2026-07-05", "quote": "Did what it needed to do. A short reason alongside the decision would have been nice."}, {"id": 61, "display_name": "Jakir H.", "university": "Anglia Ruskin University", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 3, "perceived_fairness": 5.32, "trust_automation": 3.58, "review_date": "2026-07-16", "quote": "Useful information, though it took me a moment to make sense of it all."}, {"id": 62, "display_name": "Monira B.", "university": "University of South Wales", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 3.06, "trust_automation": 5.8, "review_date": "2026-07-22", "quote": "Fine for a fast check, but I was left guessing why I got that outcome."}, {"id": 63, "display_name": "Jun L.", "university": "Oxford Brookes University", "nationality": "Chinese", "condition": "A_no_explanation", "rating": 4, "perceived_fairness": 5.63, "trust_automation": 4.95, "review_date": "2026-08-01", "quote": "Did what it needed to do. A short reason alongside the decision would have been nice."}, {"id": 64, "display_name": "Bisi A.", "university": "Coventry University", "nationality": "Nigerian", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 3.41, "trust_automation": 4.96, "review_date": "2026-07-19", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 65, "display_name": "Puja D.", "university": "Manchester Metropolitan University", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 4, "perceived_fairness": 5.97, "trust_automation": 4.41, "review_date": "2026-08-10", "quote": "Really liked exploring the scenarios, though I wanted to try a few more combinations."}, {"id": 66, "display_name": "Anik H.", "university": "University of Westminster", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 4, "perceived_fairness": 5.21, "trust_automation": 4.37, "review_date": "2026-07-15", "quote": "Clear breakdown overall — helped me understand where I stood."}, {"id": 67, "display_name": "Jaya C.", "university": "Leeds Beckett University", "nationality": "Indian", "condition": "B_surface", "rating": 4, "perceived_fairness": 5.01, "trust_automation": 4.52, "review_date": "2026-07-17", "quote": "Good explanation of the main factors, though I wanted a bit more detail on one of them."}, {"id": 68, "display_name": "Rekha B.", "university": "University of Chichester", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 2, "perceived_fairness": 1.61, "trust_automation": 4.45, "review_date": "2026-08-06", "quote": "I had no idea why I was declined. Felt like a closed door with no explanation."}, {"id": 69, "display_name": "Hidayah I.", "university": "University of Chichester", "nationality": "Malaysian", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 3.74, "trust_automation": 4.17, "review_date": "2026-07-07", "quote": "Fine for a fast check, but I was left guessing why I got that outcome."}, {"id": 70, "display_name": "Mostofa K.", "university": "University for the Creative Arts, Farnham", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 3, "perceived_fairness": 4.05, "trust_automation": 5.09, "review_date": "2026-07-06", "quote": "Useful information, though it took me a moment to make sense of it all."}, {"id": 71, "display_name": "Fazlul H.", "university": "Coventry University", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 3, "perceived_fairness": 3.49, "trust_automation": 4.6, "review_date": "2026-07-30", "quote": "Useful information, though it took me a moment to make sense of it all."}, {"id": 72, "display_name": "Mosaraf H.", "university": "University of Westminster", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 5.2, "trust_automation": 4.26, "review_date": "2026-08-16", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 73, "display_name": "Kulsum B.", "university": "University of Surrey", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 4, "perceived_fairness": 5.98, "trust_automation": 3.79, "review_date": "2026-07-19", "quote": "Clear breakdown overall — helped me understand where I stood."}, {"id": 74, "display_name": "Alexander L.", "university": "University of Dhaka", "nationality": "British", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 4.52, "trust_automation": 4.66, "review_date": "2026-08-18", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 75, "display_name": "Arafatur R.", "university": "Anglia Ruskin University", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 4.64, "trust_automation": 4.55, "review_date": "2026-08-16", "quote": "Fine for a fast check, but I was left guessing why I got that outcome."}, {"id": 76, "display_name": "Raisul I.", "university": "University of Westminster", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 3.4, "trust_automation": 4.08, "review_date": "2026-07-18", "quote": "Fine for a fast check, but I was left guessing why I got that outcome."}, {"id": 77, "display_name": "Murad H.", "university": "Anglia Ruskin University", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 3, "perceived_fairness": 5.19, "trust_automation": 3.93, "review_date": "2026-08-04", "quote": "The factors were listed, but I still wasn't sure how they were weighed together."}, {"id": 78, "display_name": "Tahiya I.", "university": "Daffodil International University", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 4, "perceived_fairness": 6.31, "trust_automation": 4.16, "review_date": "2026-07-10", "quote": "Good explanation of the main factors, though I wanted a bit more detail on one of them."}, {"id": 79, "display_name": "Aliya B.", "university": "Sheffield Hallam University", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 3, "perceived_fairness": 5.05, "trust_automation": 4.37, "review_date": "2026-08-14", "quote": "Useful information, though it took me a moment to make sense of it all."}, {"id": 80, "display_name": "Faizan Q.", "university": "London Metropolitan University", "nationality": "Pakistani", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 4.35, "trust_automation": 5.1, "review_date": "2026-07-01", "quote": "The scenario explorer was interesting, but I wasn't sure how reliable the predictions were."}, {"id": 81, "display_name": "Imran B.", "university": "University for the Creative Arts, Farnham", "nationality": "Pakistani", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 4.34, "trust_automation": 3.01, "review_date": "2026-08-15", "quote": "Useful to see what might change things, though it felt a bit abstract."}, {"id": 82, "display_name": "Abena A.", "university": "Brunel University London", "nationality": "Other", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 3.28, "trust_automation": 4.74, "review_date": "2026-07-19", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 83, "display_name": "Divya P.", "university": "Daffodil International University", "nationality": "Indian", "condition": "B_surface", "rating": 4, "perceived_fairness": 4.91, "trust_automation": 4.76, "review_date": "2026-08-13", "quote": "Good explanation of the main factors, though I wanted a bit more detail on one of them."}, {"id": 84, "display_name": "Charlie D.", "university": "University of East London", "nationality": "British", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 3.86, "trust_automation": 4.48, "review_date": "2026-08-12", "quote": "Useful to see what might change things, though it felt a bit abstract."}, {"id": 85, "display_name": "Radha P.", "university": "Leeds Beckett University", "nationality": "Indian", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 5.34, "trust_automation": 3.46, "review_date": "2026-07-31", "quote": "The scenario explorer was interesting, but I wasn't sure how reliable the predictions were."}, {"id": 86, "display_name": "Tania S.", "university": "University of South Wales", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 4, "perceived_fairness": 5.77, "trust_automation": 3.79, "review_date": "2026-07-07", "quote": "The counterfactual view was a great touch — helped me understand what to do next."}, {"id": 87, "display_name": "Ajay C.", "university": "Daffodil International University", "nationality": "Indian", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 5.11, "trust_automation": 4.38, "review_date": "2026-07-05", "quote": "Fine for a fast check, but I was left guessing why I got that outcome."}, {"id": 88, "display_name": "Hasibul H.", "university": "Sheffield Hallam University", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 4, "perceived_fairness": 5.6, "trust_automation": 3.9, "review_date": "2026-07-08", "quote": "Clear breakdown overall — helped me understand where I stood."}, {"id": 89, "display_name": "Iqbal N.", "university": "Goldsmiths University of London", "nationality": "Malaysian", "condition": "C_counterfactual", "rating": 4, "perceived_fairness": 5.75, "trust_automation": 4.18, "review_date": "2026-07-17", "quote": "The counterfactual view was a great touch — helped me understand what to do next."}, {"id": 90, "display_name": "Ming L.", "university": "University of Bedfordshire", "nationality": "Chinese", "condition": "C_counterfactual", "rating": 4, "perceived_fairness": 5.79, "trust_automation": 3.89, "review_date": "2026-07-14", "quote": "The counterfactual view was a great touch — helped me understand what to do next."}, {"id": 91, "display_name": "Mithila R.", "university": "Daffodil International University", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 4.72, "trust_automation": 4.33, "review_date": "2026-08-10", "quote": "The scenario explorer was interesting, but I wasn't sure how reliable the predictions were."}, {"id": 92, "display_name": "Jasim U.", "university": "Anglia Ruskin University", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 2.9, "trust_automation": 4.88, "review_date": "2026-07-23", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 93, "display_name": "Maryam A.", "university": "University of Surrey", "nationality": "Pakistani", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 4.59, "trust_automation": 3.39, "review_date": "2026-08-13", "quote": "Useful to see what might change things, though it felt a bit abstract."}, {"id": 94, "display_name": "Lutfur R.", "university": "BRAC University", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 3, "perceived_fairness": 4.17, "trust_automation": 3.62, "review_date": "2026-07-28", "quote": "The factors were listed, but I still wasn't sure how they were weighed together."}, {"id": 95, "display_name": "Moshiur R.", "university": "University of Hertfordshire", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 3, "perceived_fairness": 2.76, "trust_automation": 3.98, "review_date": "2026-08-12", "quote": "Useful information, though it took me a moment to make sense of it all."}, {"id": 96, "display_name": "Taslima B.", "university": "Goldsmiths University of London", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 4.28, "trust_automation": 4.65, "review_date": "2026-07-08", "quote": "Useful to see what might change things, though it felt a bit abstract."}, {"id": 97, "display_name": "Ashraful A.", "university": "North South University", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 4.56, "trust_automation": 3.3, "review_date": "2026-08-03", "quote": "The scenario explorer was interesting, but I wasn't sure how reliable the predictions were."}, {"id": 98, "display_name": "Sadman S.", "university": "University of East London", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 3, "perceived_fairness": 3.11, "trust_automation": 4.66, "review_date": "2026-08-10", "quote": "The factors were listed, but I still wasn't sure how they were weighed together."}, {"id": 99, "display_name": "Sorifa B.", "university": "Kingston University London", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 4, "perceived_fairness": 6.52, "trust_automation": 4.09, "review_date": "2026-07-31", "quote": "The counterfactual view was a great touch — helped me understand what to do next."}, {"id": 100, "display_name": "Manoj J.", "university": "Kingston University London", "nationality": "Indian", "condition": "B_surface", "rating": 4, "perceived_fairness": 6.04, "trust_automation": 5.21, "review_date": "2026-07-09", "quote": "Clear breakdown overall — helped me understand where I stood."}, {"id": 101, "display_name": "Rabia H.", "university": "University of Bedfordshire", "nationality": "Pakistani", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 5.91, "trust_automation": 3.11, "review_date": "2026-08-06", "quote": "Useful to see what might change things, though it felt a bit abstract."}, {"id": 102, "display_name": "Sumon H.", "university": "Coventry University", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 3.27, "trust_automation": 4.05, "review_date": "2026-07-06", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 103, "display_name": "Victoria L.", "university": "Middlesex University", "nationality": "British", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 4.16, "trust_automation": 4.74, "review_date": "2026-07-16", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 104, "display_name": "Runa B.", "university": "Daffodil International University", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 3, "perceived_fairness": 3.05, "trust_automation": 4.15, "review_date": "2026-07-14", "quote": "The factors were listed, but I still wasn't sure how they were weighed together."}, {"id": 105, "display_name": "Kai X.", "university": "University of Surrey", "nationality": "Chinese", "condition": "B_surface", "rating": 3, "perceived_fairness": 2.82, "trust_automation": 4.76, "review_date": "2026-07-09", "quote": "Useful information, though it took me a moment to make sense of it all."}, {"id": 106, "display_name": "Nurul H.", "university": "University of Dhaka", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 3.1, "trust_automation": 4.49, "review_date": "2026-07-27", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 107, "display_name": "Hafiz J.", "university": "University of Chichester", "nationality": "Malaysian", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 5.72, "trust_automation": 3.49, "review_date": "2026-08-15", "quote": "The scenario explorer was interesting, but I wasn't sure how reliable the predictions were."}, {"id": 108, "display_name": "Nusrat J.", "university": "Sheffield Hallam University", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 4.56, "trust_automation": 4.06, "review_date": "2026-08-11", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 109, "display_name": "Maryam A.", "university": "BRAC University", "nationality": "Pakistani", "condition": "C_counterfactual", "rating": 4, "perceived_fairness": 6.99, "trust_automation": 4.3, "review_date": "2026-07-28", "quote": "The counterfactual view was a great touch — helped me understand what to do next."}, {"id": 110, "display_name": "Mehedi H.", "university": "Sheffield Hallam University", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 4.18, "trust_automation": 4.58, "review_date": "2026-07-31", "quote": "Fine for a fast check, but I was left guessing why I got that outcome."}, {"id": 111, "display_name": "Abdul K.", "university": "University of Reading", "nationality": "Bangladeshi", "condition": "B_surface", "rating": 3, "perceived_fairness": 3.99, "trust_automation": 4.72, "review_date": "2026-08-14", "quote": "Useful information, though it took me a moment to make sense of it all."}, {"id": 112, "display_name": "Marium A.", "university": "University of Reading", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 3.76, "trust_automation": 3.51, "review_date": "2026-07-11", "quote": "Useful to see what might change things, though it felt a bit abstract."}, {"id": 113, "display_name": "Ripa A.", "university": "University of Chichester", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 4, "perceived_fairness": 4.9, "trust_automation": 5.54, "review_date": "2026-07-01", "quote": "Quick decision, though I'll admit I was curious why it landed where it did."}, {"id": 114, "display_name": "Zainab A.", "university": "Manchester Metropolitan University", "nationality": "Pakistani", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 5.01, "trust_automation": 4.36, "review_date": "2026-07-06", "quote": "Fine for a fast check, but I was left guessing why I got that outcome."}, {"id": 115, "display_name": "Rohit P.", "university": "Leeds Beckett University", "nationality": "Indian", "condition": "B_surface", "rating": 3, "perceived_fairness": 5.25, "trust_automation": 3.49, "review_date": "2026-07-11", "quote": "The factors were listed, but I still wasn't sure how they were weighed together."}, {"id": 116, "display_name": "Biplab D.", "university": "Kingston University London", "nationality": "Bangladeshi", "condition": "A_no_explanation", "rating": 3, "perceived_fairness": 4.95, "trust_automation": 4.49, "review_date": "2026-08-06", "quote": "It's just a decision with no reasoning shown — okay if you don't need the detail."}, {"id": 117, "display_name": "Arun K.", "university": "University of Hertfordshire", "nationality": "Indian", "condition": "C_counterfactual", "rating": 4, "perceived_fairness": 5.97, "trust_automation": 4.66, "review_date": "2026-07-22", "quote": "The counterfactual view was a great touch — helped me understand what to do next."}, {"id": 118, "display_name": "Sara B.", "university": "University of South Wales", "nationality": "Pakistani", "condition": "B_surface", "rating": 4, "perceived_fairness": 4.57, "trust_automation": 5.37, "review_date": "2026-08-12", "quote": "Good explanation of the main factors, though I wanted a bit more detail on one of them."}, {"id": 119, "display_name": "Priya S.", "university": "Middlesex University", "nationality": "Indian", "condition": "C_counterfactual", "rating": 3, "perceived_fairness": 5.3, "trust_automation": 3.14, "review_date": "2026-07-12", "quote": "The scenario explorer was interesting, but I wasn't sure how reliable the predictions were."}, {"id": 120, "display_name": "Sumaiya I.", "university": "Anglia Ruskin University", "nationality": "Bangladeshi", "condition": "C_counterfactual", "rating": 4, "perceived_fairness": 5.81, "trust_automation": 4.18, "review_date": "2026-07-17", "quote": "Really liked exploring the scenarios, though I wanted to try a few more combinations."}];
+
+const STAGE_SCREENS = ['decision','explanation','confidence','deepdive','counterfactual','whatnow'];
+const STAGE_LABELS  = ['Decision','Explanation','Confidence','Detail','Counterfactual','Action'];
+const COND_LABELS = {
+  'A_no_explanation':'Condition A · No explanation',
+  'B_surface':'Condition B · Surface',
+  'C_counterfactual':'Condition C · Counterfactual'
+};
+const NAV_MAP = {dashboard:'nav-home',overview:'nav-apps',decision:'nav-apps',explanation:'nav-apps',confidence:'nav-apps',deepdive:'nav-apps',counterfactual:'nav-apps',whatnow:'nav-apps',summary:'nav-summary',testimonials:'nav-reviews',uncertainty:'nav-apps'};
+
+let history=['dashboard'];
+
+function currentId(){ return history[history.length-1]; }
+function go(id){ history.push(id); render(); }
+function goBack(){ if(history.length>1){ history.pop(); render(); } }
+function navTo(id){ history=[id]; render(); }
+
+function render(){
+  const id=currentId();
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.dataset.id===id));
+  document.getElementById('screens').scrollTop=0;
+  document.getElementById('backBtn').classList.toggle('show',history.length>1);
+
+  // progress
+  const pw=document.getElementById('progressWrap');
+  const pt=document.getElementById('progressTrack');
+  const pl=document.getElementById('progressLabel');
+  const si=STAGE_SCREENS.indexOf(id);
+  if(si>-1){
+    pw.style.display='block';
+    pt.innerHTML='';
+    STAGE_LABELS.forEach((_,i)=>{
+      const d=document.createElement('div');
+      d.className='progress-seg'+(i<si?' done':i===si?' active':'');
+      pt.appendChild(d);
+    });
+    pl.textContent='Step '+(si+1)+' of '+STAGE_SCREENS.length+' · '+STAGE_LABELS[si];
+  } else {
+    pw.style.display='none';
+  }
+
+  // nav highlight
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const navId=NAV_MAP[id];
+  if(navId) document.getElementById(navId).classList.add('active');
+
+  if(id==='testimonials') renderStatsOnce();
+}
+
+function toggleDetail(el){
+  const d=el.nextElementSibling;
+  d.classList.toggle('open');
+}
+
+// ── Counterfactual interactivity ──────────────────────────────────────────────
+let cfState={debtAmt:0,deposit:false};
+let wasApproved=false;
+
+function onDebtSlide(val){
+  cfState.debtAmt=Number(val);
+  document.getElementById('debtAmtLabel').textContent='£'+cfState.debtAmt.toLocaleString();
+  updateOutcome();
+}
+function toggleCF(card,key){
+  cfState[key]=!cfState[key];
+  card.classList.toggle('on',cfState[key]);
+  updateOutcome();
+}
+function updateOutcome(){
+  const debtScore=Math.min(cfState.debtAmt/1800,1);
+  const depositScore=cfState.deposit?0.35:0;
+  const score=Math.min(debtScore*0.7+depositScore,1);
+  const banner=document.getElementById('outcomeBanner');
+  banner.className='outcome-banner';
+  const isApproved=score>=0.85;
+  if(score<0.3){banner.classList.add('pill-negative');banner.textContent='Current outcome: not approved';}
+  else if(score<0.85){banner.classList.add('pill-amber');banner.textContent='Getting closer — borderline, not certain yet';}
+  else{banner.classList.add('pill-positive');banner.textContent='✓ Recommendation would likely flip to Approved';}
+  const proj=Math.round(72+score*23);
+  const el=document.getElementById('projConf');
+  el.textContent=proj+'%';
+  el.style.color=score>=0.85?'var(--positive)':score<0.3?'var(--ink)':'var(--amber)';
+  if(isApproved&&!wasApproved) fireConfetti();
+  wasApproved=isApproved;
+}
+
+// ── Confetti ──────────────────────────────────────────────────────────────────
+function fireConfetti(){
+  const layer=document.getElementById('confettiLayer');
+  const cols=['#1C6B5F','#2A8C7D','#8B5E14','#16233D','#E3EFED'];
+  for(let i=0;i<40;i++){
+    const p=document.createElement('div');
+    p.className='confetti-piece';
+    const sz=5+Math.random()*6;
+    p.style.cssText='width:'+sz+'px;height:'+(sz*0.42)+'px;left:'+Math.random()*100+'%;background:'+cols[Math.floor(Math.random()*cols.length)]+';animation-duration:'+(1.0+Math.random()*0.9)+'s;animation-delay:'+(Math.random()*0.3)+'s;';
+    layer.appendChild(p);
+    setTimeout(()=>p.remove(),2600);
+  }
+}
+
+// ── Theme toggle ──────────────────────────────────────────────────────────────
+function toggleTheme(){
+  const dev=document.getElementById('device');
+  const dark=dev.getAttribute('data-theme')==='dark';
+  dev.setAttribute('data-theme',dark?'light':'dark');
+}
+
+// ── Testimonials ──────────────────────────────────────────────────────────────
+const AVATAR_COLS=['#16233D','#1C6B5F','#8B5E14','#256B46','#4A5670','#2A8C7D','#B03325'];
+function avatarColor(name){let h=0;for(let c of name)h=(h*31+c.charCodeAt(0))|0;return AVATAR_COLS[Math.abs(h)%AVATAR_COLS.length];}
+function initials(name){return name.split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2);}
+function stars(n){return '★'.repeat(n)+'☆'.repeat(5-n);}
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtDate(iso){const d=new Date(iso);return d.getDate()+' '+MONTHS[d.getMonth()];}
+
+let activeFilter='all', activeCondFilter='all', visibleCount=10;
+let statsRendered=false;
+
+function setFilter(f){
+  activeFilter=f;
+  document.querySelectorAll('#ratingFilters .filter-chip').forEach(c=>c.classList.toggle('active',c.dataset.filter===f));
+  renderTestimonials(true);
+}
+function setCondFilter(c){
+  activeCondFilter=c;
+  document.querySelectorAll('#condFilters .filter-chip').forEach(el=>el.classList.toggle('active',el.dataset.cond===c));
+  renderTestimonials(true);
+}
+function getFiltered(){
+  const q=(document.getElementById('testiSearch')||{}).value||'';
+  const ql=q.trim().toLowerCase();
+  return ALL_TESTIMONIALS.filter(t=>{
+    if(activeFilter!=='all'&&String(t.rating)!==activeFilter) return false;
+    if(activeCondFilter!=='all'&&t.condition!==activeCondFilter) return false;
+    if(ql&&!(t.display_name.toLowerCase().includes(ql)||t.quote.toLowerCase().includes(ql)||t.university.toLowerCase().includes(ql)||t.nationality.toLowerCase().includes(ql))) return false;
+    return true;
+  });
+}
+function renderStatsOnce(){
+  if(statsRendered) return; statsRendered=true;
+  const total=ALL_TESTIMONIALS.length;
+  const avg=(ALL_TESTIMONIALS.reduce((s,t)=>s+t.rating,0)/total);
+  document.getElementById('avgNum').textContent=avg.toFixed(1);
+  document.getElementById('avgStars').textContent=stars(Math.round(avg));
+  const hist=document.getElementById('histWrap');
+  hist.innerHTML='';
+  [5,4,3,2,1].forEach(r=>{
+    const cnt=ALL_TESTIMONIALS.filter(t=>t.rating===r).length;
+    const pct=total?Math.round(cnt/total*100):0;
+    const row=document.createElement('div');
+    row.className='hist-row';
+    row.innerHTML='<span>'+r+'</span><div class="hist-track"><div class="hist-fill" style="width:'+pct+'%;"></div></div><span>'+cnt+'</span>';
+    hist.appendChild(row);
+  });
+  // Condition averages
+  ['A_no_explanation','B_surface','C_counterfactual'].forEach((cond,i)=>{
+    const sub=ALL_TESTIMONIALS.filter(t=>t.condition===cond);
+    const a=sub.reduce((s,t)=>s+t.rating,0)/sub.length;
+    document.getElementById(['avgA','avgB','avgC'][i]).textContent=a.toFixed(1)+'★';
+  });
+  renderTestimonials(true);
+}
+function renderTestimonials(reset){
+  if(reset) visibleCount=10;
+  const filtered=getFiltered();
+  const list=document.getElementById('testiList');
+  const label=document.getElementById('countLabel');
+  label.textContent=filtered.length+(filtered.length===1?' review':' reviews')+(activeFilter!=='all'?' · '+activeFilter+'★':'')+(activeCondFilter!=='all'?' · '+COND_LABELS[activeCondFilter]:'');
+  if(!filtered.length){
+    list.innerHTML='<div class="no-results">No reviews match.</div>';
+    document.getElementById('loadMoreBtn').style.display='none';
+    return;
+  }
+  list.innerHTML=filtered.slice(0,visibleCount).map(t=>`
+    <div class="testi-card">
+      <div class="testi-head">
+        <div class="testi-avatar" style="background:${avatarColor(t.display_name)};">${initials(t.display_name)}</div>
+        <div style="flex:1;">
+          <div class="testi-name">${t.display_name}</div>
+          <div class="testi-meta">${t.university} · ${fmtDate(t.review_date)}</div>
+        </div>
+        <div class="testi-stars">${stars(t.rating)}</div>
+      </div>
+      <p class="testi-quote">"${t.quote}"</p>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+        <span class="testi-cond">${COND_LABELS[t.condition]}</span>
+        <span class="testi-fairness">Fairness: ${t.perceived_fairness}/7</span>
+      </div>
+    </div>
+  `).join('');
+  const btn=document.getElementById('loadMoreBtn');
+  btn.style.display=visibleCount>=filtered.length?'none':'block';
+  if(visibleCount<filtered.length) btn.textContent='Show more ('+( filtered.length-visibleCount)+' left)';
+}
+function loadMore(){visibleCount+=10;renderTestimonials(false);}
+
+render();
+</script>
+</body>
+</html>
