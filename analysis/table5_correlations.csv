@@ -1,0 +1,13 @@
+Predictor,Outcome,r,p,sig
+Fin. Literacy,Calibration,0.027,0.502,ns
+Fin. Literacy,Follow Rate,-0.123,0.002,**
+Fin. Literacy,Errors Caught,0.098,0.014,*
+Fin. Literacy,Trust/Auto,-0.186,<.001,***
+NFC,Calibration,0.015,0.705,ns
+NFC,Follow Rate,-0.105,0.009,**
+NFC,Errors Caught,0.047,0.243,ns
+NFC,Trust/Auto,-0.015,0.704,ns
+Tech Disp.,Calibration,0.024,0.55,ns
+Tech Disp.,Follow Rate,0.07,0.082,ns
+Tech Disp.,Errors Caught,-0.049,0.222,ns
+Tech Disp.,Trust/Auto,0.185,<.001,***
