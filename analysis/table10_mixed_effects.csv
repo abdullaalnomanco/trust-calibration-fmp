@@ -1,0 +1,7 @@
+Variable,Beta,SE,CI_lo,CI_hi,p,sig
+Intercept,0.0745,0.2623,-0.4397,0.5886,0.777,ns
+cond_B,-0.025,0.3644,-0.7392,0.6892,0.945,ns
+cond_C,-0.0465,0.3644,-0.7607,0.6677,0.898,ns
+financial_literacy_score_0_3,0.0062,0.0085,-0.0105,0.0229,0.466,ns
+need_for_cognition_1_5,-0.0084,0.0096,-0.0273,0.0104,0.381,ns
+technology_disposition_1_5,-0.0037,0.0109,-0.0251,0.0177,0.732,ns
