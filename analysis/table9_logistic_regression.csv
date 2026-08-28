@@ -1,0 +1,7 @@
+Variable,OR,CI_lo,CI_hi,p,sig
+Intercept,4.32,1.522,12.259,0.006,**
+cond_B,0.439,0.293,0.657,<.001,***
+cond_C,0.205,0.131,0.322,<.001,***
+financial_literacy_score_0_3,0.808,0.681,0.959,0.015,*
+need_for_cognition_1_5,0.622,0.509,0.76,<.001,***
+technology_disposition_1_5,1.175,0.943,1.463,0.151,ns
